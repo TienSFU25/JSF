@@ -23,15 +23,12 @@ class Encoder(nn.Module):
         self.embedding.weight.data.uniform_(-0.1, 0.1)
 
     def init_hidden(self, input):
-        if USE_CUDA:
-            hidden = Variable(torch.zeros(self.n_layers*2, input.size(0), self.hidden_size)).cuda()
-        else:
-            hidden = Variable(torch.zeros(self.n_layers*2, input.size(0), self.hidden_size))
+        hidden = Variable(torch.zeros(self.n_layers*2, input.size(0), self.hidden_size))
+        context = Variable(torch.zeros(self.n_layers*2, input.size(0), self.hidden_size))
 
         if USE_CUDA:
-            context = Variable(torch.zeros(self.n_layers*2, input.size(0), self.hidden_size)).cuda()
-        else:
-            context = Variable(torch.zeros(self.n_layers*2, input.size(0), self.hidden_size))
+            hidden = hidden.cuda()
+            context = context.cuda()
 
         return hidden, context
 
@@ -113,15 +110,12 @@ class Decoder(nn.Module):
         return context
     
     def init_hidden(self, input):
-        if USE_CUDA:
-            hidden = Variable(torch.zeros(self.n_layers, input.size(0), self.hidden_size)).cuda()
-        else:
-            hidden = Variable(torch.zeros(self.n_layers, input.size(0), self.hidden_size))
+        hidden = Variable(torch.zeros(self.n_layers, input.size(0), self.hidden_size))
+        context = Variable(torch.zeros(self.n_layers, input.size(0), self.hidden_size))
 
         if USE_CUDA:
-            context = Variable(torch.zeros(self.n_layers, input.size(0), self.hidden_size)).cuda()
-        else:
-            context = Variable(torch.zeros(self.n_layers, input.size(0), self.hidden_size))
+            hidden = hidden.cuda()
+            context = context.cuda()
 
         return hidden, context
     
