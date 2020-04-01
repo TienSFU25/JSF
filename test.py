@@ -4,14 +4,15 @@ import argparse
 import numpy as np
 import pdb
 
-from data import *
+from data_tienboy import *
 from model import Encoder, Decoder
 
 def test(config, stuff, some_encoder, some_decoder):
-    word2index, tag2index, intent2index = stuff
+    # word2index, tag2index, intent2index = stuff
+    word_enc, tag_enc, intent_enc = stuff
 
-    index2tag = {v:k for k,v in tag2index.items()}
-    index2intent = {v:k for k,v in intent2index.items()}
+    # index2tag = {v:k for k,v in tag2index.items()}
+    # index2intent = {v:k for k,v in intent2index.items()}
 
     test_data = get_raw("./data/atis-2.dev.w-intent.iob")
 
@@ -21,15 +22,16 @@ def test(config, stuff, some_encoder, some_decoder):
     for i in range(100):
         index = random.choice(range(len(test_data)))
         test_raw = test_data[index][0]
-        test_in = prepare_sequence(test_raw,word2index)
+        test_in = prepare_sequence(test_raw, word_enc)
+        pdb.set_trace()
         test_mask = Variable(torch.BoolTensor(tuple(map(lambda s: s ==0, test_in)))).view(1,-1)
-        start_decode = Variable(torch.LongTensor([[word2index['<SOS>']]*1])).transpose(1,0)
+        start_decode = Variable(torch.LongTensor([[0]])).transpose(1,0)
 
         output, hidden_c = encoder(test_in.unsqueeze(0),test_mask.unsqueeze(0))
         tag_score, intent_score = decoder(start_decode,hidden_c,output,test_mask)
 
         v, predicted = torch.max(tag_score,1)
-        truth = prepare_sequence(test_data[index][1], tag2index)
+        truth = prepare_sequence(test_data[index][1], tag_enc)
         
         corrects = torch.sum(truth == predicted).item()
         correct += corrects
@@ -63,10 +65,10 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=0.001)
     config = parser.parse_args()
 
-    _, word2index,tag2index,intent2index = preprocessing('./data/atis-2.train.w-intent.iob',60)
+    _, word_enc, tag_enc, intent_enc = preprocessing('./data/atis-2.train.w-intent.iob',60)
 
-    encoder = Encoder(len(word2index), config.embedding_size, config.hidden_size)
-    decoder = Decoder(len(tag2index), len(intent2index), len(tag2index)//3, config.hidden_size*2)
+    encoder = Encoder(len(word_enc.classes_), config.embedding_size, config.hidden_size)
+    decoder = Decoder(len(tag_enc.classes_), len(intent_enc.classes_), len(tag_enc.classes_)//3, config.hidden_size*2)
 
     encoder.init_weights()
     decoder.init_weights()
@@ -79,4 +81,4 @@ if __name__ == '__main__':
     encoder.eval()
     decoder.eval()
     
-    test(config, (word2index, tag2index, intent2index), encoder, decoder)
+    test(config, (word_enc, tag_enc, intent_enc), encoder, decoder)
