@@ -5,7 +5,9 @@ import numpy as np
 import pdb
 
 from data import *
-from model import Encoder, Decoder
+# from model import Encoder, Decoder
+
+from gru_model import Encoder, Decoder
 
 USE_CUDA = torch.cuda.is_available()
 

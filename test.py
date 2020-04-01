@@ -5,7 +5,7 @@ import numpy as np
 import pdb
 
 from data import *
-from model import Encoder, Decoder
+from gru_model import Encoder, Decoder
 
 def test(config, stuff, some_encoder, some_decoder):
     word2index, tag2index, intent2index = stuff
