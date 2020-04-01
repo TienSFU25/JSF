@@ -4,7 +4,7 @@ import argparse
 import numpy as np
 import pdb
 
-from data_tienboy import *
+from data import *
 from model import Encoder, Decoder
 
 USE_CUDA = torch.cuda.is_available()
@@ -75,16 +75,16 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=0.001)
     config = parser.parse_args()
 
-    all_data, word_enc, tag_enc, intent_enc = preprocessing(config.file_path, config.max_length)
+    all_data, word2index, tag2index, intent2index = preprocessing(config.file_path, config.max_length)
+    
     pct = int(len(all_data) * 0.7)
     train_data = all_data[:pct]
     test_data = all_data[pct:]
     
     print("Training on", len(train_data), "samples, testing on", len(test_data))
 
-    pdb.set_trace()
-    encoder = Encoder(len(word_enc.classes_), config.embedding_size, config.hidden_size)
-    decoder = Decoder(len(tag_enc.classes_), len(intent_enc.classes_), len(tag_enc.classes_)//3, config.hidden_size*2)
+    encoder = Encoder(len(word2index), config.embedding_size, config.hidden_size)
+    decoder = Decoder(len(tag2index), len(intent2index), len(tag2index)//3, config.hidden_size*2)
 
     encoder.init_weights()
     decoder.init_weights()

@@ -4,38 +4,45 @@ import argparse
 import numpy as np
 import pdb
 
-from data_tienboy import *
+from data import *
 from model import Encoder, Decoder
 
 def test(config, stuff, some_encoder, some_decoder):
-    # word2index, tag2index, intent2index = stuff
-    word_enc, tag_enc, intent_enc = stuff
-
-    # index2tag = {v:k for k,v in tag2index.items()}
-    # index2intent = {v:k for k,v in intent2index.items()}
+    word2index, tag2index, intent2index = stuff
 
     test_data = get_raw("./data/atis-2.dev.w-intent.iob")
 
-    total = 0
-    correct = 0
+    total_tag = 0
+    correct_tag = 0
+    total_intent = 0
+    correct_intent = 0
 
-    for i in range(100):
-        index = random.choice(range(len(test_data)))
-        test_raw = test_data[index][0]
-        test_in = prepare_sequence(test_raw, word_enc)
-        pdb.set_trace()
+    for index in range(len(test_data)):
+        test_item = test_data[index]
+        test_raw, tag_raw, intent_raw = test_item
+        test_in = prepare_sequence(test_raw,word2index)
         test_mask = Variable(torch.BoolTensor(tuple(map(lambda s: s ==0, test_in)))).view(1,-1)
-        start_decode = Variable(torch.LongTensor([[0]])).transpose(1,0)
+        start_decode = Variable(torch.LongTensor([[0]*1])).transpose(1,0)
 
         output, hidden_c = encoder(test_in.unsqueeze(0),test_mask.unsqueeze(0))
         tag_score, intent_score = decoder(start_decode,hidden_c,output,test_mask)
 
-        v, predicted = torch.max(tag_score,1)
-        truth = prepare_sequence(test_data[index][1], tag_enc)
+        _, predicted = torch.max(tag_score, dim=1)
+        truth = prepare_sequence(tag_raw, tag2index)
         
         corrects = torch.sum(truth == predicted).item()
-        correct += corrects
-        total += truth.size(0)
+        correct_tag += corrects
+        total_tag += truth.size(0)
+
+        _, predicted_intent = torch.max(intent_score, dim=1)
+        # pdb.set_trace()
+
+        intent_raw = intent_raw if intent_raw in intent2index else UNK
+        true_intent = intent2index[intent_raw]
+        if true_intent == predicted_intent.item():
+            correct_intent += 1
+
+        total_intent += 1
 
         # print("Input Sentence : ", *test_data[index][0])
         # print("Truth        : ", *truth)
@@ -47,7 +54,9 @@ def test(config, stuff, some_encoder, some_decoder):
     # print("Truth        : ",test_data[index][2])
     # print("Prediction : ",index2intent[i.data.tolist()[0]])
 
-    print("Total", total, "correct", correct, "accuracy", float(correct/total))
+    print("N =", len(test_data))
+    print("Total tag", total_tag, "correct", correct_tag, "accuracy", float(correct_tag/total_tag))
+    print("Total intent", total_intent, "correct", correct_intent, "accuracy", float(correct_intent/total_intent))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -65,10 +74,10 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=0.001)
     config = parser.parse_args()
 
-    _, word_enc, tag_enc, intent_enc = preprocessing('./data/atis-2.train.w-intent.iob',60)
+    _, word2index,tag2index,intent2index = preprocessing('./data/atis-2.train.w-intent.iob',60)
 
-    encoder = Encoder(len(word_enc.classes_), config.embedding_size, config.hidden_size)
-    decoder = Decoder(len(tag_enc.classes_), len(intent_enc.classes_), len(tag_enc.classes_)//3, config.hidden_size*2)
+    encoder = Encoder(len(word2index), config.embedding_size, config.hidden_size)
+    decoder = Decoder(len(tag2index), len(intent2index), len(tag2index)//3, config.hidden_size*2)
 
     encoder.init_weights()
     decoder.init_weights()
@@ -81,4 +90,4 @@ if __name__ == '__main__':
     encoder.eval()
     decoder.eval()
     
-    test(config, (word_enc, tag_enc, intent_enc), encoder, decoder)
+    test(config, (word2index, tag2index, intent2index), encoder, decoder)
