@@ -5,7 +5,6 @@ import numpy as np
 import pdb
 
 from data import *
-# from gru_model import Encoder, Decoder
 from no_attention_model import Encoder, Decoder
 
 def test(config, stuff, some_encoder, some_decoder):
@@ -25,8 +24,8 @@ def test(config, stuff, some_encoder, some_decoder):
         test_mask = Variable(torch.BoolTensor(tuple(map(lambda s: s ==0, test_in)))).view(1,-1)
         start_decode = Variable(torch.LongTensor([[0]*1])).transpose(1,0)
 
-        output, hidden_c = encoder(test_in.unsqueeze(0),test_mask.unsqueeze(0))
-        tag_score, intent_score = decoder(start_decode,hidden_c,output,test_mask)
+        output = encoder(test_in.unsqueeze(0),test_mask.unsqueeze(0))
+        tag_score, intent_score = decoder(start_decode, output, test_mask)
 
         _, predicted = torch.max(tag_score, dim=1)
         truth = prepare_sequence(tag_raw, tag2index)

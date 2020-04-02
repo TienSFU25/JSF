@@ -6,8 +6,8 @@ import pdb
 
 from data import *
 # from model import Encoder, Decoder
-
-from gru_model import Encoder, Decoder
+# from gru_model import Encoder, Decoder
+from no_attention_model import Encoder, Decoder
 
 USE_CUDA = torch.cuda.is_available()
 
@@ -31,10 +31,11 @@ def train(config, train_data, encoder, decoder):
             encoder.zero_grad()
             decoder.zero_grad()
 
-            output, hidden_c = encoder(x, x_mask)
+            # output, hidden_c = encoder(x, x_mask)
+            output = encoder(x, x_mask)
             start_decode = Variable(torch.LongTensor([[0]*config.batch_size])).transpose(1, 0)
             # pdb.set_trace()
-            tag_score, intent_score = decoder(start_decode, hidden_c, output, x_mask)
+            tag_score, intent_score = decoder(start_decode, output, x_mask)
 
             loss_1 = loss_function_1(tag_score, tag_target)
             loss_2 = loss_function_2(intent_score, intent_target)
