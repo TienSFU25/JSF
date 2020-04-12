@@ -5,12 +5,14 @@ import numpy as np
 import pdb
 
 from data import *
+from constants import *
 from no_attention_model import Encoder, Decoder
 
 def test(config, stuff, some_encoder, some_decoder):
     word2index, tag2index, intent2index = stuff
 
-    test_data = get_raw("./data/atis-2.dev.w-intent.iob")
+    test_data = [] 
+    [test_data.extend(get_raw(t)) for t in Test_Data_Dirs]
 
     total_tag = 0
     correct_tag = 0
@@ -50,34 +52,25 @@ def test(config, stuff, some_encoder, some_decoder):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_path', type=str, default='./data/atis-2.train.w-intent.iob', help='path of train data')
+    parser.add_argument('--train_dir', type=str, default=Train_Data_Dir, help='path of training data, to load correct word dictionaries')
     parser.add_argument('--model_dir', type=str, default='./models/', help='path for saving trained models')
 
     # Model parameters
     parser.add_argument('--max_length', type=int, default=60, help='max sequence length')
     parser.add_argument('--embedding_size', type=int, default=64, help='dimension of word embedding vectors')
     parser.add_argument('--hidden_size', type=int, default=64, help='dimension of lstm hidden states')
-    parser.add_argument('--num_layers', type=int, default=1, help='number of layers in lstm')
-    
-    parser.add_argument('--step_size', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=16)
-    parser.add_argument('--learning_rate', type=float, default=0.001)
+
     config = parser.parse_args()
 
-    _, word2index,tag2index,intent2index = preprocessing('./data/atis-2.train.w-intent.iob',60)
+    _, word2index,tag2index,intent2index = preprocessing(config.train_dir, config.max_length)
 
     encoder = Encoder(len(word2index), config.embedding_size, config.hidden_size)
     decoder = Decoder(len(tag2index), len(intent2index), len(tag2index)//3, config.hidden_size*2)
 
-    encoder.init_weights()
-    decoder.init_weights()
-
-    ee = torch.load(os.path.join(config.model_dir, 'jointnlu-encoder.pkl'))
-    dd = torch.load(os.path.join(config.model_dir, 'jointnlu-decoder.pkl'))
+    ee = torch.load(os.path.join(config.model_dir, Model_Encoder_NA_Dir))
+    dd = torch.load(os.path.join(config.model_dir, Model_Decoder_NA_Dir))
 
     encoder.load_state_dict(ee)
     decoder.load_state_dict(dd)
-    encoder.eval()
-    decoder.eval()
     
     test(config, (word2index, tag2index, intent2index), encoder, decoder)

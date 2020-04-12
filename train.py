@@ -5,6 +5,7 @@ import numpy as np
 import pdb
 
 from data import *
+from constants import *
 # from model import Encoder, Decoder
 
 from gru_model import Encoder, Decoder
@@ -57,13 +58,13 @@ def train(config, train_data, encoder, decoder):
         os.makedirs(config.model_dir)
     
     # pdb.set_trace()
-    torch.save(decoder.state_dict(), os.path.join(config.model_dir, 'jointnlu-decoder.pkl'))
-    torch.save(encoder.state_dict(), os.path.join(config.model_dir, 'jointnlu-encoder.pkl'))
+    torch.save(decoder.state_dict(), os.path.join(config.model_dir, Model_Decoder_Dir))
+    torch.save(encoder.state_dict(), os.path.join(config.model_dir, Model_Encoder_Dir))
     print("Train Complete!")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--file_path', type=str, default='./data/atis-2.train.w-intent.iob', help='path of train data')
+    parser.add_argument('--file_path', type=str, default=Train_Data_Dir, help='path of train data')
     parser.add_argument('--model_dir', type=str, default='./models/', help='path for saving trained models')
 
     # Model parameters
