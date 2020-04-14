@@ -3,24 +3,22 @@ import torch.optim as optim
 import argparse
 import numpy as np
 import pdb
+import tqdm
 
 from data import *
 # from gru_model import Encoder, Decoder
 from no_attention_model import Encoder, Decoder
 from constants import *
 
-def test(config, stuff, some_encoder, some_decoder):
+def test(config, stuff, encoder, decoder, test_data):
     word2index, tag2index, intent2index = stuff
-
-    test_data = []
-    [test_data.extend(get_raw(t)) for t in Test_Data_Dirs]
 
     total_tag = 0
     correct_tag = 0
     total_intent = 0
     correct_intent = 0
 
-    for index in range(len(test_data)):
+    for index in tqdm.tqdm(range(len(test_data))):
         test_item = test_data[index]
         test_raw, tag_raw, intent_raw = test_item
         test_in = prepare_sequence(test_raw,word2index)
@@ -59,6 +57,7 @@ if __name__ == '__main__':
     # Model parameters
     parser.add_argument('--max_length', type=int, default=60, help='max sequence length')
     parser.add_argument('--embedding_size', type=int, default=64, help='dimension of word embedding vectors')
+    parser.add_argument('--hidden_size', type=int, default=64, help='dimension of lstm hidden states')
 
     config = parser.parse_args()
 
@@ -73,4 +72,7 @@ if __name__ == '__main__':
     encoder.load_state_dict(ee)
     decoder.load_state_dict(dd)
 
-    test(config, (word2index, tag2index, intent2index), encoder, decoder)
+    test_data = []
+    [test_data.extend(get_raw(t)) for t in Test_Data_Dirs]
+
+    test(config, (word2index, tag2index, intent2index), encoder, decoder, test_data)
