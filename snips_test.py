@@ -50,4 +50,4 @@ if __name__ == '__main__':
     for i, _ in enumerate(test_data[0]):
         rearranged.append((test_data[0][i], test_data[1][i], test_data[2][i]))
 
-    test(config, (word2index, tag2index, intent2index), encoder, decoder, rearranged)
+    test(config, (word2index, tag2index, intent2index), encoder, decoder, rearranged, save=True)

@@ -10,13 +10,16 @@ from data import *
 from no_attention_model import Encoder, Decoder
 from constants import *
 
-def test(config, stuff, encoder, decoder, test_data):
+def test(config, stuff, encoder, decoder, test_data, save=False):
     word2index, tag2index, intent2index = stuff
 
     total_tag = 0
     correct_tag = 0
     total_intent = 0
     correct_intent = 0
+
+    truths = []
+    predicteds = []
 
     for index in tqdm.tqdm(range(len(test_data))):
         test_item = test_data[index]
@@ -31,6 +34,9 @@ def test(config, stuff, encoder, decoder, test_data):
         _, predicted = torch.max(tag_score, dim=1)
         truth = prepare_sequence(tag_raw, tag2index)
         
+        truths.append(" ".join([str(t.item()) for t in truth]) + '\n')
+        predicteds.append(" ".join([str(t.item()) for t in predicted]) + '\n')
+
         corrects = torch.sum(truth == predicted).item()
         correct_tag += corrects
         total_tag += truth.size(0)
@@ -44,6 +50,13 @@ def test(config, stuff, encoder, decoder, test_data):
             correct_intent += 1
 
         total_intent += 1
+
+    if save:
+        with open('./results/pred.txt', 'w') as f1:
+            f1.writelines(predicteds)
+
+        with open('./results/truth.txt', 'w') as f2:
+            f2.writelines(truths)
 
     print("N =", len(test_data))
     print("Total tag", total_tag, "correct", correct_tag, "accuracy", float(correct_tag/total_tag))
