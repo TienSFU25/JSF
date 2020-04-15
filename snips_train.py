@@ -8,7 +8,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--file_path', type=str, default='./data/snips/train', help='path of train data')
     parser.add_argument('--model_dir', type=str, default='./models/snips', help='path for saving trained models')
-    parser.add_argument('--attention', type=bool, default=True, help='Use attention or no?')
+    parser.add_argument('--attention', type=int, default=1, help='Use attention or no?')
 
     # Model parameters
     parser.add_argument('--max_length', type=int, default=60, help='max sequence length')
@@ -32,6 +32,7 @@ if __name__ == '__main__':
         from no_attention_model import Encoder, Decoder
         from train_no_attention import train
 
+    # pdb.set_trace()
     encoder = Encoder(len(word2index), config.embedding_size, config.hidden_size)
     decoder = Decoder(len(tag2index), len(intent2index), len(tag2index)//3, config.hidden_size*2)
 
